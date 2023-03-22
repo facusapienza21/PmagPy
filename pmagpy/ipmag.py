@@ -518,19 +518,17 @@ def fishrot(k=20, n=100, dec=0, inc=90, di_block=True):
     directions = []
     declinations = []
     inclinations = []
-    if di_block == True:
-        for data in range(n):
-            d, i = pmag.fshdev(k)
-            drot, irot = pmag.dodirot(d, i, dec, inc)
-            directions.append([drot, irot, 1.])
-        return directions
+
+    # Generation of samples
+    declinations, inclinations = pmag.fshdev(np.repeat(k, n))
+
+    resampled_di = np.array([declinations, inclinations, np.repeat(1, n)]).T
+    resampled_di_rotated = pmag.dodirot_V(resampled_di, np.repeat(dec, n), np.repeat(inc, n))    
+
+    if di_block: 
+        return np.insert(resampled_di_rotated, 2, np.ones(n), axis=1) 
     else:
-        for data in range(n):
-            d, i = pmag.fshdev(k)
-            drot, irot = pmag.dodirot(d, i, dec, inc)
-            declinations.append(drot)
-            inclinations.append(irot)
-        return declinations, inclinations
+        return resampled_di_rotated[:,0], resampled_di_rotated[:,1]
     
     
 def fisher_mean_resample(alpha95=20, n=100, dec=0, inc=90, di_block=True):
